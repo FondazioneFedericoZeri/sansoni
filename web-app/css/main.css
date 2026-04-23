@@ -1,0 +1,251 @@
+:root {
+    --zeri-blue: #4F90CC;
+    --zeri-blue-dark: #1d5a8e;
+    --text-primary: #1a1a18;
+    --text-secondary: #555;
+    --text-muted: #888;
+    --border: #e0ddd5;
+    --surface: rgba(255, 255, 255, 0.92);
+    --bg-chip: #f0f5fb;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+/* ── Full-screen map ── */
+#map {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+}
+
+.leaflet-tile-pane {
+    filter: saturate(0.65) brightness(0.97);
+}
+
+.leaflet-control-attribution {
+    font-size: 10px !important;
+}
+
+/* ── Left floating panel ── */
+#left-panel {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    width: 280px;
+    background: var(--surface);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 2px 24px rgba(0, 0, 0, 0.10);
+    padding: 20px 22px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#panel-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+#panel-header h3 {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+}
+
+/* ── Year view ── */
+#year-label {
+    display: block;
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--zeri-blue);
+    letter-spacing: -1px;
+    line-height: 1;
+}
+
+/* ── City view ── */
+#city-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#city-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#city-year-display {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--zeri-blue);
+    letter-spacing: 0.02em;
+}
+
+#city-name-display {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+}
+
+/* ── Chips row ── */
+.chips-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.stat-chip {
+    background: var(--bg-chip);
+    border: 1px solid #c9ddf0;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    color: var(--zeri-blue-dark);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.stat-chip strong {
+    font-weight: 700;
+    color: var(--zeri-blue-dark);
+    font-variant-numeric: tabular-nums;
+}
+
+.ctrl-btn-sm {
+    width: 24px;
+    height: 24px;
+    font-size: 15px;
+}
+
+/* ── Floating controls (bottom center) ── */
+#controls {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 12px 20px;
+    box-shadow: 0 2px 24px rgba(0, 0, 0, 0.10);
+}
+
+#controls-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ctrl-btn {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+}
+
+.ctrl-btn:hover {
+    background: var(--bg-chip);
+    color: var(--zeri-blue-dark);
+    border-color: #c9ddf0;
+}
+
+/* ── Progress bar ── */
+#progress-track {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+#progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--zeri-blue);
+    border-radius: 2px;
+}
+
+/* ── Offcanvas info ── */
+.offcanvas {
+    max-width: 420px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.offcanvas-header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px 16px;
+}
+
+.offcanvas-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+}
+
+.offcanvas-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.info-section h6 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--zeri-blue);
+    margin-bottom: 10px;
+}
+
+.info-section p, .info-section ul {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}

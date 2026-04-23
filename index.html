@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sansoni - Campagna fotografica in Italia</title>
+
+  <link rel="icon" type="image/x-icon" href="web-app/assets/img/zeri-icon.png">
+
+  <!-- OG Protocol -->
+  <meta property="og:title" content="Sansoni - Campagna fotografica in Italia" />
+  <meta property="og:description" content="Visualizzazione interattiva la campagna fotografica di Sansoni in Italia" />
+  <meta property="og:image" content="" />
+  <meta property="og:url" content="" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Stylesheets -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="web-app/css/main.css" />
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Full-screen map -->
+  <div id="map"></div>
+
+  <!-- Left floating panel -->
+  <div id="left-panel">
+    <div id="panel-header">
+      <h3>La campagna fotografica di Mario Sansoni in Italia</h3>
+      <button class="ctrl-btn" id="btn-info" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-info" title="Informazioni">
+        <i class="bi bi-info-lg"></i>
+      </button>
+    </div>
+
+    <!-- Default: year summary -->
+    <div id="panel-year">
+      <span id="year-label">–</span>
+      <div class="chips-row">
+        <div class="stat-chip"><strong id="stat-cities">–</strong> località visitate</div>
+        <div class="stat-chip"><strong id="stat-year-photos">–</strong> foto</div>
+      </div>
+    </div>
+
+    <!-- On marker click: city detail -->
+    <div id="panel-city" hidden>
+      <div id="city-header">
+        <div id="city-header-top">
+          <span id="city-year-display">–</span>
+          <button class="ctrl-btn ctrl-btn-sm" id="btn-back-year" title="Chiudi">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <span id="city-name-display">–</span>
+      </div>
+      <div class="chips-row">
+        <div class="stat-chip"><strong id="stat-photos">–</strong> foto</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating controls -->
+  <div id="controls">
+    <div id="controls-row">
+      <button class="ctrl-btn" id="btn-prev-year" title="Anno precedente"><i class="bi bi-skip-start-fill"></i></button>
+      <button class="ctrl-btn" id="btn-play" title="Pausa"><i class="bi bi-pause-fill"></i></button>
+      <button class="ctrl-btn" id="btn-next-year" title="Anno successivo"><i class="bi bi-skip-end-fill"></i></button>
+    </div>
+    <div id="progress-track">
+      <div id="progress-bar"></div>
+    </div>
+  </div>
+
+  <!-- Offcanvas info -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-info" aria-labelledby="offcanvas-info-label">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvas-info-label">La campagna fotografica di Mario Sansoni</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Chiudi"></button>
+    </div>
+    <div class="offcanvas-body">
+
+      <section class="info-section">
+        <h6>La campagna</h6>
+        <p>
+          Dal 1929 al 1951, la Frick Art Reference Library incaricò Mario Sansoni di realizzare una campagna fotografica sulle opere d'arte in Italia. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        </p>
+
+        <p>
+          Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo
+        </p>
+      </section>
+
+      <section class="info-section">
+        <h6>Per saperne di più</h6>
+        <p><ul>
+          <li>The Frick Collection, "Sansoni, Mario [photogapher], 1925-1938. <a href="https://archives.frick.org/repositories/3/archival_objects/5290">Link</a>.</li>
+          <li>. . .</li>
+        </ul></p>
+      </section>
+
+      <section class="info-section">
+        <h6>Crediti</h6>
+        <p>I dati relativi alla campagna fotografica sono stati estratti dal catalogo della <a href="https://archives.frick.org/">Frick Collection</a> nell'ambito del progetto Pharos</p>
+        <p>Il progetto è stato realizzato dalla <a>Fondazione Federico Zeri</a> (Università di Bologna). Il codice, rilasciato con licenza CC-BY 4.0, è reperibile nell'apposita repository su GitHub.</p>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Main JavaScript -->
+  <script src="web-app/js/main.js"></script>
+</body>
+
+</html>
