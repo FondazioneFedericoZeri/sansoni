@@ -226,7 +226,7 @@ btnFaster.addEventListener('click', () => {
    Upload the csv file and load its 
    data of "dataset" (l. 4)*/
 
-fetch('web-app/assets/data.csv')
+fetch('../assets/data.csv')
     .then(r => r.text())
     .then(text => {
         const [header, ...rows] = text.trim().split('\n');

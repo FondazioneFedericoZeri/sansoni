@@ -1,6 +1,6 @@
 let dataset = [];
 let years = [];
-let markersByYear = new Map(); // year → [circleMarker, ...]
+let markersByYear = new Map();      // year → [circleMarker, ...]
 let currentYearMarkers = [];
 let activeMarker = null;
 let currentYearIdx = 0;
@@ -9,9 +9,9 @@ let isPlaying = true;
 /* Timer state */
 let nextYearTimeout = null;
 let cycleIntervalId = null;
-let progressRaf = null;
-let progressStart = null;
-let progressElapsed = 0;
+let progressRaf = null;             // id of active requestAnimationFrame (from browser: run before next screen repaint)
+let progressStart = null;           // timestamp of when the animation began
+let progressElapsed = 0;            // seconds passed when user clicks on pause
 
 const YEAR_DURATION = 10000;
 
@@ -51,8 +51,8 @@ function parseCSVRow(row) {
 
 /* ── Marker layer management ── */
 function setYearMarkers(year) {
-    currentYearMarkers.forEach(m => map.removeLayer(m));
-    activeMarker = null;
+    currentYearMarkers.forEach(m => map.removeLayer(m));  // Remove old markers
+    activeMarker = null;                                  // Remove current visualised city
     currentYearMarkers = markersByYear.get(year) || [];
     currentYearMarkers.forEach(m => {
         m.setStyle(MARKER_DEFAULT);
@@ -60,7 +60,7 @@ function setYearMarkers(year) {
     });
 }
 
-/* ── Panel helpers ── */
+/* ── UI editing functions for panels ── */
 function showYearPanel(yearData) {
     setYearMarkers(yearData.year);
     document.getElementById('panel-city').hidden = true;
@@ -81,13 +81,28 @@ function showCityPanel(marker, record) {
     document.getElementById('stat-photos').textContent = record.total.toLocaleString('it-IT');
 }
 
+/* ── UI editing functions for controls ── */
+function setPlaying(val) {
+    isPlaying = val; 
+    if (isPlaying) {
+        btnPlay.innerHTML = '<i class="bi bi-pause-fill"></i>';
+        startCycle();
+    } else {
+        btnPlay.innerHTML = '<i class="bi bi-play-fill"></i>';
+        clearTimeout(nextYearTimeout);
+        clearInterval(cycleIntervalId);
+        stopProgress();
+    }
+}
+
 /* ── Progress bar ── */
 function startProgressFrom(elapsed) {
-    if (progressRaf) cancelAnimationFrame(progressRaf);
+    if (progressRaf) cancelAnimationFrame(progressRaf); /* To cancel animation when clicking on pause */
     progressStart = performance.now() - elapsed;
     function tick(now) {
         const pct = Math.min((now - progressStart) / YEAR_DURATION * 100, 100);
         progressBar.style.width = pct + '%';
+        /* Only if percentage lower than 100% */
         if (pct < 100) progressRaf = requestAnimationFrame(tick);
     }
     progressRaf = requestAnimationFrame(tick);
@@ -117,37 +132,24 @@ function startCycle() {
     startProgressFrom(progressElapsed);
 }
 
-function setPlaying(val) {
-    isPlaying = val;
-    if (isPlaying) {
-        btnPlay.innerHTML = '<i class="bi bi-pause-fill"></i>';
-        startCycle();
-    } else {
-        btnPlay.innerHTML = '<i class="bi bi-play-fill"></i>';
-        clearTimeout(nextYearTimeout);
-        clearInterval(cycleIntervalId);
-        stopProgress();
-    }
-}
-
 /* ── Controls ── */
-btnPlay.addEventListener('click', () => setPlaying(!isPlaying));
+btnPlay.addEventListener('click', () => setPlaying(!isPlaying));                // Play / pause
 
-document.getElementById('btn-prev-year').addEventListener('click', () => {
+document.getElementById('btn-prev-year').addEventListener('click', () => {      // Show previous year
     currentYearIdx = (currentYearIdx - 1 + years.length) % years.length;
     progressElapsed = 0;
     showYearPanel(years[currentYearIdx]);
     if (isPlaying) startCycle();
 });
 
-document.getElementById('btn-next-year').addEventListener('click', () => {
+document.getElementById('btn-next-year').addEventListener('click', () => {      // Show next year
     currentYearIdx = (currentYearIdx + 1) % years.length;
     progressElapsed = 0;
     showYearPanel(years[currentYearIdx]);
     if (isPlaying) startCycle();
 });
 
-document.getElementById('btn-back-year').addEventListener('click', () => {
+document.getElementById('btn-back-year').addEventListener('click', () => {      // Close city panel
     showYearPanel(years[currentYearIdx]);
 });
 
@@ -158,6 +160,7 @@ fetch('web-app/assets/data.csv')
         const [header, ...rows] = text.trim().split('\n');
         const keys = parseCSVRow(header);
 
+        /* Populate `dataset` */
         dataset = rows.map(row => {
             const vals = parseCSVRow(row);
             const obj = {};
@@ -169,6 +172,7 @@ fetch('web-app/assets/data.csv')
             });
             return obj;
         }).filter(d =>
+            /* Filter out missing year or geocoordinates */
             Number.isInteger(d.year) &&
             !isNaN(d.lat) && d.lat !== 0 &&
             !isNaN(d.lng) && d.lng !== 0
@@ -188,10 +192,59 @@ fetch('web-app/assets/data.csv')
         dataset.forEach(d => {
             const marker = L.circleMarker([d.lat, d.lng], { ...MARKER_DEFAULT, opacity: 1 });
             marker.on('click', () => showCityPanel(marker, d));
-            if (!markersByYear.has(d.year)) markersByYear.set(d.year, []);
+            /* Ancillary Map: each year contains array of markers */
+            if (!markersByYear.has(d.year)) markersByYear.set(d.year, []); 
             markersByYear.get(d.year).push(marker);
         });
 
         showYearPanel(years[0]);
         setPlaying(true);
     });
+
+
+/*
+
+    The web app flows as follows: 
+    
+    WHEN WEB-APP IS LOADED
+
+    1) Fetch data from the csv and populate main `dataset`, then
+       group by year and populate Map object (markersByYear): it
+       associates for each year a list of L.circleMarker objects
+
+    2) call `showYearPanel()` for the first record of the Map
+
+        a) `setYearMarkers()` is called to plot the markers for the
+            year on the map
+        b)  The left panel is updated
+
+    3) call `setPlaying(true)`
+
+        a) updates UI of the central control
+        b) call `startCycle`()
+            i) create and animate progress bar
+        c) after a timeout, update with `advanceYear()`
+
+    WHEN CLICKING ON MARKER
+
+    1) Set the current marker as active with `showCityPanel()``
+
+        a) Updates the panel with info of the city
+
+    CONTROLS
+
+    1) "Play / Pause"
+
+        a) call `setPlaying()`, controlling play / pause of timer and
+           progress bar with global `isPlaying` boolean
+           i) use `startProgressFrom`, storing elapsed time in current
+              cycle in `progressElapsed`, and `stopProgress`
+
+    2) "Next" / "Previous year": begin a new cicle, re-initialising
+       ancillary values (timeOut, interval, progressElapsed) for
+       automatic transition between years. Calls same function of when
+       app is loaded, but with different indices
+
+    3) "Close city panel" close the city panel and remove active marker styling
+
+*/
