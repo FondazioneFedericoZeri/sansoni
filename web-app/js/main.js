@@ -13,7 +13,7 @@ let progressRaf = null;             // id of active requestAnimationFrame (from 
 let progressStart = null;           // timestamp of when the animation began
 let progressElapsed = 0;            // seconds passed when user clicks on pause
 
-const YEAR_DURATION = 10000;
+const YEAR_DURATION = 4000;
 
 /* Map */
 const map = L.map('map', { zoomControl: false, attributionControl: true, zoomSnap: 0.5 })
