@@ -32,8 +32,28 @@ const btnPlay     = document.getElementById('btn-play');
 const progressBar = document.getElementById('progress-bar');
 
 /* ── Marker styles ── */
-const MARKER_DEFAULT = { radius: 8, fillColor: '#8fb3cc', color: '#fff', weight: 1.5, fillOpacity: 0.85 };
-const MARKER_ACTIVE  = { radius: 13, fillColor: '#4F90CC', color: '#fff', weight: 2, fillOpacity: 1 };
+/* Three discrete size categories based on photo count per campaign:
+   small  →  1–10 shots
+   medium → 11–50 shots
+   large  →  51+  shots */
+const MARKER_STYLES = {
+    small:  { radius: 6,  fillColor: '#8fb3cc', color: '#fff', weight: 1.5, fillOpacity: 0.85 },
+    medium: { radius: 10, fillColor: '#8fb3cc', color: '#fff', weight: 1.5, fillOpacity: 0.85 },
+    large:  { radius: 15, fillColor: '#8fb3cc', color: '#fff', weight: 1.5, fillOpacity: 0.85 }
+};
+const MARKER_ACTIVE_STYLES = {
+    small:  { radius: 10, fillColor: '#4F90CC', color: '#fff', weight: 2, fillOpacity: 1 },
+    medium: { radius: 14, fillColor: '#4F90CC', color: '#fff', weight: 2, fillOpacity: 1 },
+    large:  { radius: 19, fillColor: '#4F90CC', color: '#fff', weight: 2, fillOpacity: 1 }
+};
+
+function photoCategory(total) {
+    if (total <= 10) return 'small';
+    if (total <= 50) return 'medium';
+    return 'large';
+}
+function defaultStyle(total) { return MARKER_STYLES[photoCategory(total)]; }
+function activeStyle(total)  { return MARKER_ACTIVE_STYLES[photoCategory(total)]; }
 
 /* ── CSV parser (handles quoted fields with commas) ── */
 function parseCSVRow(row) {
@@ -55,7 +75,7 @@ function setYearMarkers(year) {
     activeMarker = null;                                  // Remove current visualised city
     currentYearMarkers = markersByYear.get(year) || [];
     currentYearMarkers.forEach(m => {
-        m.setStyle(MARKER_DEFAULT);
+        m.setStyle(defaultStyle(m._total));  // restore size category for each marker
         m.addTo(map);
     });
 }
@@ -71,9 +91,9 @@ function showYearPanel(yearData) {
 }
 
 function showCityPanel(marker, record) {
-    if (activeMarker) activeMarker.setStyle(MARKER_DEFAULT);
+    if (activeMarker) activeMarker.setStyle(defaultStyle(activeMarker._total));  // deactivate previous marker
     activeMarker = marker;
-    marker.setStyle(MARKER_ACTIVE);
+    marker.setStyle(activeStyle(record.total));  // highlight with category-appropriate active style
     document.getElementById('panel-year').hidden = true;
     document.getElementById('panel-city').hidden = false;
     document.getElementById('city-name-display').textContent = record.city;
@@ -190,7 +210,9 @@ fetch('web-app/assets/data.csv')
 
         /* Create all markers (not yet added to map) */
         dataset.forEach(d => {
-            const marker = L.circleMarker([d.lat, d.lng], { ...MARKER_DEFAULT, opacity: 1 });
+            const marker = L.circleMarker([d.lat, d.lng], { ...defaultStyle(d.total), opacity: 1 });
+            /* Store photo count to define the size of the marker */
+            marker._total = d.total; 
             marker.on('click', () => showCityPanel(marker, d));
             /* Ancillary Map: each year contains array of markers */
             if (!markersByYear.has(d.year)) markersByYear.set(d.year, []); 
@@ -216,6 +238,8 @@ fetch('web-app/assets/data.csv')
 
         a) `setYearMarkers()` is called to plot the markers for the
             year on the map
+            i) the function photoCategory() defines the size of the
+               marker in fuction of the total no. of photos
         b)  The left panel is updated
 
     3) call `setPlaying(true)`
